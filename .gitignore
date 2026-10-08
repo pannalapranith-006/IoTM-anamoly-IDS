@@ -1,0 +1,9 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pcap
+alerts.log
+status.json
+normal_flows.csv
+.vercel/

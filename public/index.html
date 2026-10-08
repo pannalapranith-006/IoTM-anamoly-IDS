@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IoMT Anomaly IDS – Live Demo</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;background:#0f172a;color:#e2e8f0}
+ h1{font-size:1.3rem} .card{background:#1e293b;border-radius:12px;padding:16px;margin:12px 0}
+ button{background:#334155;color:#e2e8f0;border:0;border-radius:8px;padding:10px 14px;margin:4px;font-size:.95rem;cursor:pointer}
+ button.on{background:#2563eb} #status{font-size:1.4rem;font-weight:700;padding:12px;border-radius:10px;text-align:center}
+ .ok{background:#14532d}.bad{background:#7f1d1d} table{width:100%;border-collapse:collapse;font-size:.85rem}
+ td,th{padding:6px;border-bottom:1px solid #334155;text-align:left} .muted{color:#94a3b8;font-size:.85rem}
+ .wrap{overflow-x:auto}
+</style></head><body>
+<h1>🏥 IoMT Anomaly Intrusion Detection – Demo</h1>
+<p class="muted">Model: <b id="model">…</b>. Each click simulates one network flow from an IoMT device and scores it.</p>
+<div class="card">
+ <div id="status" class="ok">Waiting…</div>
+ <p class="muted" id="detail"></p>
+</div>
+<div class="card">
+ <button onclick="run('normal')">Normal</button>
+ <button onclick="run('dos')">DoS flood</button>
+ <button onclick="run('scan')">Port scan</button>
+ <button onclick="run('exfil')">Data exfiltration</button>
+ <button onclick="run('unknown')">Unknown attack</button>
+ <button id="auto" onclick="toggle()">▶ Auto-monitor</button>
+</div>
+<div class="card wrap"><table><thead><tr><th>Time</th><th>Traffic</th><th>Score</th><th>Verdict</th></tr></thead><tbody id="log"></tbody></table></div>
+<script>
+const kinds=['normal','normal','normal','dos','scan','exfil','unknown']; let timer=null;
+const $=id=>document.getElementById(id);
+fetch('/api/info').then(r=>r.json()).then(d=>$('model').textContent=d.model);
+async function run(kind){
+  const d=await (await fetch('/api/simulate?kind='+kind)).json();
+  const bad=d.status!=='NORMAL';
+  $('status').textContent=bad?'🚨 '+d.status:'✅ NORMAL'; $('status').className=bad?'bad':'ok';
+  $('detail').textContent='score '+d.score+' vs threshold '+d.threshold;
+  $('log').insertAdjacentHTML('afterbegin',`<tr><td>${new Date().toLocaleTimeString()}</td><td>${kind}</td><td>${d.score}</td><td>${d.status}</td></tr>`);
+  while($('log').rows.length>12) $('log').deleteRow(-1);
+}
+function toggle(){
+  const b=$('auto');
+  if(timer){clearInterval(timer);timer=null;b.textContent='▶ Auto-monitor';b.className='';}
+  else{timer=setInterval(()=>run(kinds[Math.floor(Math.random()*kinds.length)]),2000);b.textContent='⏸ Stop';b.className='on';}
+}
+</script></body></html>
