@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IoMT Anomaly IDS – Live Demo</title>
@@ -29,9 +29,9 @@
 <script>
 const kinds=['normal','normal','normal','dos','scan','exfil','unknown']; let timer=null;
 const $=id=>document.getElementById(id);
-fetch('/api/info').then(r=>r.json()).then(d=>$('model').textContent=d.model);
+fetch('/api/index?op=info').then(r=>r.json()).then(d=>$('model').textContent=d.model);
 async function run(kind){
-  const d=await (await fetch('/api/simulate?kind='+kind)).json();
+  const d=await (await fetch('/api/index?op=simulate&kind='+kind)).json();
   const bad=d.status!=='NORMAL';
   $('status').textContent=bad?'🚨 '+d.status:'✅ NORMAL'; $('status').className=bad?'bad':'ok';
   $('detail').textContent='score '+d.score+' vs threshold '+d.threshold;
